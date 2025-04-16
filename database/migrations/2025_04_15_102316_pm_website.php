@@ -32,10 +32,11 @@ return new class extends Migration {
             $table->string('lastName', 50);
             $table->string('email', 100)->unique();
             $table->string('phone', 20)->nullable();
-            $table->unsignedBigInteger('role_id')->nullable()->comment('Foreign Key');
+            $table->unsignedBigInteger('role_id')->nullable()->comment('Foreign Key to roles table');
             $table->enum('status', ['active', 'on-leave', 'terminated'])->default('active');
 
             $table->index('role_id');
+            // TODO: Add foreign key constraint for role_id
         });
 
         Schema::create('auditlog', function (Blueprint $table) {
@@ -50,6 +51,7 @@ return new class extends Migration {
             $table->unsignedInteger('employee_id')->nullable();
 
             $table->index('employee_id');
+            // TODO: Add foreign key constraint for employee_id
         });
 
         Schema::create('expenses', function (Blueprint $table) {
@@ -62,6 +64,7 @@ return new class extends Migration {
             $table->index('category');
             $table->index('transaction_date');
             $table->index('approved_by');
+            // TODO: Add foreign key constraint for approved_by
         });
 
         Schema::create('inventory', function (Blueprint $table) {
@@ -77,16 +80,19 @@ return new class extends Migration {
 
             $table->index('last_updated_by');
             $table->index('quantity');
+            // TODO: Add foreign key constraint for last_updated_by
         });
 
         Schema::create('sale_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
-            $table->foreignId('inventory_id')->constrained('inventories')->onDelete('cascade');
+            $table->unsignedBigInteger('sale_id');
+            $table->unsignedBigInteger('inventory_id');
             $table->integer('quantity')->default(1);
             $table->decimal('unit_price', 10, 2)->default(0.00);
             $table->decimal('line_total', 10, 2)->default(0.00);
             $table->timestamps();
+
+            // TODO: Add foreign key constraints for sale_id and inventory_id
         });
 
         Schema::create('sales', function (Blueprint $table) {
@@ -96,9 +102,11 @@ return new class extends Migration {
             $table->decimal('subtotal', 12, 2)->default(0.00);
             $table->decimal('tax_amount', 10, 2)->default(0.00);
             $table->decimal('total_amount', 12, 2)->default(0.00);
-            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
+            $table->unsignedBigInteger('employee_id');
+            $table->unsignedBigInteger('customer_id');
             $table->timestamps();
+
+            // TODO: Add foreign key constraints for employee_id and customer_id
         });
 
         Schema::create('services', function (Blueprint $table) {
@@ -107,10 +115,12 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2)->default(0.00);
             $table->timestamp('scheduled_date')->useCurrent();
-            $table->foreignId('assigned_employee_id')->constrained('employees')->onDelete('cascade');
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
+            $table->unsignedBigInteger('assigned_employee_id');
+            $table->unsignedBigInteger('customer_id');
             $table->enum('status', ['scheduled', 'in-progress', 'completed'])->default('scheduled');
             $table->timestamps();
+
+            // TODO: Add foreign key constraints for assigned_employee_id and customer_id
         });
 
         Schema::create('customers', function (Blueprint $table) {
@@ -142,11 +152,8 @@ return new class extends Migration {
             $table->integer('customer_count')->nullable();
             $table->unsignedBigInteger('top_employee_id')->nullable();
             $table->timestamps();
-            
-            $table->foreign('top_employee_id')
-                  ->references('id')
-                  ->on('employee')
-                  ->onDelete('set null');
+
+            // TODO: Add foreign key constraint for top_employee_id
         });
 
         Schema::create('employee_performance', function (Blueprint $table) {
@@ -158,17 +165,20 @@ return new class extends Migration {
             $table->decimal('total_services', 12, 2)->nullable();
             $table->decimal('performance_rating', 3, 1)->nullable();
             $table->timestamps();
-            
-            $table->foreign('employee_id')
-                  ->references('id')
-                  ->on('employee')
-                  ->onDelete('set null');
+
+            // TODO: Add foreign key constraint for employee_id
         });
-        
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('employee_performance');
+        Schema::dropIfExists('monthly_summary');
+        Schema::dropIfExists('profit');
+        Schema::dropIfExists('customers');
+        Schema::dropIfExists('services');
+        Schema::dropIfExists('sales');
+        Schema::dropIfExists('sale_items');
         Schema::dropIfExists('inventory');
         Schema::dropIfExists('expenses');
         Schema::dropIfExists('auditlog');
@@ -177,4 +187,3 @@ return new class extends Migration {
         Schema::dropIfExists('roles');
     }
 };
-
