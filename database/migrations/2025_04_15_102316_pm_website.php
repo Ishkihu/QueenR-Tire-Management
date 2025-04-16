@@ -171,41 +171,31 @@ return new class extends Migration {
 
         Schema::create('payment', function (Blueprint $table) {
             $table->id(); // BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
-            $table->foreignId('sale_id')->constrained()->comment('FK');
-            $table->foreignId('services_id')->constrained()->comment('FK');
-            $table->foreignId('customer_id')->constrained()->comment('FK');
+            $table->unsignedBigInteger('sale_id')->index()->comment('FK');
+            $table->unsignedBigInteger('services_id')->index()->comment('FK');
+            $table->unsignedBigInteger('customer_id')->index()->comment('FK');
             $table->string('transaction_code', 50)->collation('utf8mb4_unicode_ci');
             $table->dateTime('payment_date')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->enum('payment_method', ['Cash', 'Credit Card', 'Check', 'Online'])->default('Cash');
             $table->decimal('amount', 10, 2)->unsigned()->default(0.00);
             $table->string('reference_number', 50)->nullable()->collation('utf8mb4_unicode_ci');
             $table->enum('status', ['Completed', 'Pending', 'Failed'])->default('Pending')->collation('utf8mb4_unicode_ci');
-            $table->unsignedInteger('employee_id')->comment('FK');
-        
-            // Indexes
-            $table->index('sale_id');
-            $table->index('services_id');
-            $table->index('customer_id');
-            $table->index('employee_id');
+            $table->unsignedInteger('employee_id')->index()->comment('FK');
         });
+        
         
         Schema::create('service_logs', function (Blueprint $table) {
             $table->id(); // BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
-            $table->foreignId('service_id')->constrained()->comment('FK');
-            $table->foreignId('payment_id')->nullable()->constrained()->comment('FK');
-            $table->dateTime('timestamp');
+            $table->unsignedBigInteger('service_id')->index()->comment('FK');
+            $table->unsignedBigInteger('payment_id')->nullable()->index()->comment('FK');
+            $table->dateTime('timestamp')->index();
             $table->string('activity_type', 50)->collation('utf8mb4_unicode_ci');
             $table->text('notes')->nullable()->collation('utf8mb4_unicode_ci');
             $table->text('parts_used')->nullable()->collation('utf8mb4_unicode_ci');
-            $table->unsignedInteger('employee_id')->comment('FK');
+            $table->unsignedInteger('employee_id')->index()->comment('FK');
             $table->string('vehicles_details', 100)->nullable()->collation('utf8mb4_unicode_ci');
-        
-            // Indexes
-            $table->index('employee_id');
-            $table->index('service_id');
-            $table->index('payment_id');
-            $table->index('timestamp');
         });
+        
         
     }
 
