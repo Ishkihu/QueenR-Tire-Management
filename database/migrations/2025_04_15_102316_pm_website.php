@@ -78,6 +78,93 @@ return new class extends Migration {
             $table->index('last_updated_by');
             $table->index('quantity');
         });
+
+        Schema::create('sale_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
+            $table->foreignId('inventory_id')->constrained('inventories')->onDelete('cascade');
+            $table->integer('quantity')->default(1);
+            $table->decimal('unit_price', 10, 2)->default(0.00);
+            $table->decimal('line_total', 10, 2)->default(0.00);
+            $table->timestamps();
+        });
+
+        Schema::create('sales', function (Blueprint $table) {
+            $table->id();
+            $table->string('invoice_number', 50)->index();
+            $table->date('sale_date')->index();
+            $table->decimal('subtotal', 12, 2)->default(0.00);
+            $table->decimal('tax_amount', 10, 2)->default(0.00);
+            $table->decimal('total_amount', 12, 2)->default(0.00);
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('services', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100);
+            $table->text('description')->nullable();
+            $table->decimal('price', 10, 2)->default(0.00);
+            $table->timestamp('scheduled_date')->useCurrent();
+            $table->foreignId('assigned_employee_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
+            $table->enum('status', ['scheduled', 'in-progress', 'completed'])->default('scheduled');
+            $table->timestamps();
+        });
+
+        Schema::create('customers', function (Blueprint $table) {
+            $table->id();
+            $table->string('customer_number', 20)->unique();
+            $table->string('firstName', 50);
+            $table->string('lastName', 50);
+            $table->string('contact', 20)->nullable();
+            $table->integer('loyalty_points')->default(0);
+            $table->timestamps();
+        });
+        
+        Schema::create('profit', function (Blueprint $table) {
+            $table->id();
+            $table->date('period_start_date')->nullable()->index();
+            $table->date('period_end_date')->nullable()->index();
+            $table->decimal('total_revenue', 14, 2)->nullable();
+            $table->decimal('total_expenses', 14, 2)->nullable();
+            $table->decimal('net_profit', 14, 2)->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('monthly_summary', function (Blueprint $table) {
+            $table->id();
+            $table->date('month')->nullable()->index();
+            $table->decimal('total_sales', 14, 2)->nullable();
+            $table->decimal('total_services', 14, 2)->nullable();
+            $table->decimal('total_expenses', 14, 2)->nullable();
+            $table->integer('customer_count')->nullable();
+            $table->unsignedBigInteger('top_employee_id')->nullable();
+            $table->timestamps();
+            
+            $table->foreign('top_employee_id')
+                  ->references('id')
+                  ->on('employee')
+                  ->onDelete('set null');
+        });
+
+        Schema::create('employee_performance', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('employee_id')->nullable()->index();
+            $table->date('period_start_date')->nullable()->index();
+            $table->date('period_end_date')->nullable()->index();
+            $table->decimal('total_sales', 12, 2)->nullable();
+            $table->decimal('total_services', 12, 2)->nullable();
+            $table->decimal('performance_rating', 3, 1)->nullable();
+            $table->timestamps();
+            
+            $table->foreign('employee_id')
+                  ->references('id')
+                  ->on('employee')
+                  ->onDelete('set null');
+        });
+        
     }
 
     public function down(): void
@@ -90,3 +177,4 @@ return new class extends Migration {
         Schema::dropIfExists('roles');
     }
 };
+
