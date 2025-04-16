@@ -195,8 +195,6 @@ return new class extends Migration {
             $table->unsignedInteger('employee_id')->index()->comment('FK');
             $table->string('vehicles_details', 100)->nullable()->collation('utf8mb4_unicode_ci');
         });
-        
-        
     }
 
     public function down(): void
